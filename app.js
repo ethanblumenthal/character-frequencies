@@ -1,3 +1,15 @@
+d3.select('#reset')
+    .on('click', function() {
+        d3.selectAll('.letter')
+            .remove();
+
+        d3.select('#phrase')
+            .text('');
+        
+        d3.select('#count')
+            .text('');
+    })
+
 d3.select('form')
     .on('submit', function() {
         d3.event.preventDefault();
@@ -6,7 +18,9 @@ d3.select('form')
 
     var letters = d3.select('#letters')
         .selectAll('.letter')
-        .data(getFrequencies(text));
+        .data(getFrequencies(text), function(d) {
+            return d.character;
+        });
 
     letters.classed('new', false)
         .exit()
