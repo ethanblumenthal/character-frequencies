@@ -1,3 +1,10 @@
+var width = 800;
+var height = 400;
+var barPadding = 10;
+var svg = d3.select('svg')
+            .attr('width', width)
+            .attr('height', height);
+
 d3.select('#reset')
     .on('click', function() {
         d3.selectAll('.letter')
@@ -15,40 +22,43 @@ d3.select('form')
         d3.event.preventDefault();
         var input = d3.select('input');
         var text = input.property('value');
+        var data = getFrequencies(text);
+        var barWidth = width / data.length - barPadding;
 
-    var letters = d3.select('#letters')
-        .selectAll('.letter')
-        .data(getFrequencies(text), function(d) {
-            return d.character;
-        });
-
-    letters.classed('new', false)
-        .exit()
-        .remove();
-
-    letters
-        .enter()
-        .append('div')
-            .classed('letter', true)
-            .classed('new', true)
-        .merge(letters)
-            .style('width', '20px')
-            .style('line-height', '20px')
-            .style('margin-right', '5px')
-            .style('height', function(d) {
-                return d.count * 20 + 'px';
-            })
-            .text(function(d) {
+        var letters = svg
+            .selectAll('.letter')
+            .data(data, function(d) {
                 return d.character;
             });
 
-    d3.select('#phrase')
-        .text('Analysis of: ' + text);
-    
-    d3.select('#count')
-        .text('(New characters: ' + letters.enter().nodes().length + ')');
+        letters.classed('new', false)
+            .exit()
+            .remove();
 
-    input.property('value', '');
+        letters
+            .enter()
+            .append('rect')
+                .classed('letter', true)
+                .classed('new', true)
+            .merge(letters)
+                .style('width', barWidth)
+                .style('height', function(d) {
+                    return d.count * 20;
+                })
+                .attr('x', function(d, i) {
+                    return (barWidth + barPadding) * i;
+                })
+                .attr('y', function(d) {
+                    return height - d.count * 20;
+                });
+
+        d3.select('#phrase')
+            .text('Analysis of: ' + text);
+        
+        d3.select('#count')
+            .text('(New characters: ' + letters.enter().nodes().length + ')');
+
+        input.property('value', '');
 });
 
 function getFrequencies(str) {
